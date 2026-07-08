@@ -4,6 +4,9 @@ build:
 test:
 	forge test -vv
 
+clean:
+	forge clean
+
 coverage:
 	forge coverage
 
