@@ -72,9 +72,20 @@ contract StableX {
         _;
     }
 
-    /**
-     * Core Functions
-     */
+    modifier onlyMinter() {
+        if (!_minters[msg.sender]) {
+            revert StableX__Unauthorized(msg.sender);
+        }
+        _;
+    }
+
+    modifier onlyBlacklister() {
+        if (!_blacklisters[msg.sender]) {
+            revert StableX__Unauthorized(msg.sender);
+        }
+        _;
+    }
+
     constructor(uint256 maxSupply, uint256 initialMint) {
         if (maxSupply < initialMint) {
             revert StableX__CapExceeded(0, initialMint, maxSupply);
@@ -91,6 +102,10 @@ contract StableX {
         emit OwnershipTransferred(address(0), msg.sender);
     }
 
+    /**
+     * Ownership Functions
+     */
+
     function transferOwnership(address newOwner) public onlyOwner {
         if (newOwner == address(0)) {
             revert StableX__ZeroAddress();
@@ -106,6 +121,9 @@ contract StableX {
         emit OwnershipTransferred(oldOwner, address(0));
     }
 
+    /**
+     * Core Functions
+     */
     function transfer(address to, uint256 amount) public returns (bool) {
         if (to == address(0)) {
             revert StableX__ZeroAddress();
@@ -156,6 +174,89 @@ contract StableX {
         _spendAllowance(from, msg.sender, amount);
         _transfer(from, to, amount);
         return true;
+    }
+
+    /**
+     * Roles Functions
+     */
+    function grantMinter(address account) external onlyOwner {
+        if (account == address(0)) {
+            revert StableX__ZeroAddress();
+        }
+        _minters[account] = true;
+        emit MinterGranted(account, msg.sender);
+    }
+
+    function revokeMinter(address account) external onlyOwner {
+        if (account == address(0)) {
+            revert StableX__ZeroAddress();
+        }
+        _minters[account] = false;
+        emit MinterRevoked(account, msg.sender);
+    }
+
+    function grantBlacklister(address account) external onlyOwner {
+        if (account == address(0)) {
+            revert StableX__ZeroAddress();
+        }
+        _blacklisters[account] = true;
+        emit BlacklisterGranted(account, msg.sender);
+    }
+
+    function revokeBlacklister(address account) external onlyOwner {
+        if (account == address(0)) {
+            revert StableX__ZeroAddress();
+        }
+        _blacklisters[account] = false;
+        emit BlacklisterRevoked(account, msg.sender);
+    }
+
+    function mint(address to, uint256 amount) external onlyMinter {
+        if (to == address(0)) {
+            revert StableX__ZeroAddress();
+        }
+        if (_blacklisted[to]) {
+            revert StableX__Blacklisted(to);
+        }
+        if (_totalSupply + amount > i_maxSupply) {
+            revert StableX__CapExceeded(_totalSupply, amount, i_maxSupply);
+        }
+        _mint(to, amount);
+    }
+
+    function burn(uint256 amount) external {
+        if (_blacklisted[msg.sender]) {
+            revert StableX__Blacklisted(msg.sender);
+        }
+        if (_balances[msg.sender] < amount) {
+            revert StableX__InsufficientBalance(msg.sender, _balances[msg.sender], amount);
+        }
+        _burn(msg.sender, amount);
+    }
+
+    /**
+     * Blacklist Functions
+     */
+    function blacklist(address account) external onlyBlacklister {
+        if (account == address(0)) {
+            revert StableX__ZeroAddress();
+        }
+        if (_blacklisted[account]) {
+            revert StableX__AlreadyBlacklisted(account);
+        }
+        _blacklisted[account] = true;
+        emit AddressBlacklisted(account, msg.sender);
+    }
+
+    function removeFromBlacklist(address account) external onlyBlacklister {
+        if (account == address(0)) {
+            revert StableX__ZeroAddress();
+        }
+        if (!_blacklisted[account]) {
+            revert StableX__NotBlacklisted(account);
+        }
+        _blacklisted[account] = false;
+        emit AddressUnblacklisted(account, msg.sender);
     }
 
     /**
@@ -225,5 +326,17 @@ contract StableX {
 
     function owner() public view returns (address) {
         return _owner;
+    }
+
+    function isMinter(address account) public view returns (bool) {
+        return _minters[account];
+    }
+
+    function isBlacklister(address account) public view returns (bool) {
+        return _blacklisters[account];
+    }
+
+    function isBlacklisted(address account) public view returns (bool) {
+        return _blacklisted[account];
     }
 }
