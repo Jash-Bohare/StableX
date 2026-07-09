@@ -336,7 +336,7 @@ contract StableX {
         return _blacklisted[account];
     }
 
-    functin maxSupply() public view returns (uint256) {
+    function maxSupply() public view returns (uint256) {
         return i_maxSupply;
     }
 }
