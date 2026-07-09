@@ -83,19 +83,23 @@ contract StableX {
         _;
     }
 
-    constructor(uint256 maxSupply, uint256 initialMint) {
+    constructor(uint256 maxSupply, uint256 initialMint, address initialOwner) {
+        if(initialOwner == address(0)) {
+            revert StableX__ZeroAddress();
+        }
+
         if (maxSupply < initialMint) {
             revert StableX__CapExceeded(0, initialMint, maxSupply);
         }
         i_maxSupply = maxSupply;
 
-        _owner = msg.sender;
-        _minters[msg.sender] = true;
-        _blacklisters[msg.sender] = true;
+        _owner = initialOwner;
+        _minters[initialOwner] = true;
+        _blacklisters[initialOwner] = true;
 
-        _mint(msg.sender, initialMint);
+        _mint(initialOwner, initialMint);
 
-        emit OwnershipTransferred(address(0), msg.sender);
+        emit OwnershipTransferred(address(0), initialOwner);
     }
 
     /**
