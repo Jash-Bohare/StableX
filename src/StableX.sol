@@ -5,14 +5,11 @@ contract StableX {
     /**
      * Token metadata
      */
-    string private _name;
-    string private _symbol;
+    string private constant TOKEN_NAME = "StableX";
+    string private constant TOKEN_SYMBOL = "STX";
     uint8 private constant DECIMALS = 18;
     uint256 private _totalSupply;
     uint256 private immutable i_maxSupply;
-
-    string private constant TOKEN_NAME = "StableX";
-    string private constant TOKEN_SYMBOL = "STX";
 
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -90,14 +87,13 @@ contract StableX {
         if (maxSupply < initialMint) {
             revert StableX__CapExceeded(0, initialMint, maxSupply);
         }
-        _name = TOKEN_NAME;
-        _symbol = TOKEN_SYMBOL;
         i_maxSupply = maxSupply;
-        _totalSupply = initialMint;
+
         _owner = msg.sender;
         _minters[msg.sender] = true;
         _blacklisters[msg.sender] = true;
-        _balances[msg.sender] = initialMint;
+
+        _mint(msg.sender, initialMint);
 
         emit OwnershipTransferred(address(0), msg.sender);
     }
@@ -301,11 +297,11 @@ contract StableX {
      * Public View Functions
      */
     function name() public view returns (string memory) {
-        return _name;
+        return TOKEN_NAME;
     }
 
     function symbol() public view returns (string memory) {
-        return _symbol;
+        return TOKEN_SYMBOL;
     }
 
     function decimals() public pure returns (uint8) {
@@ -338,5 +334,9 @@ contract StableX {
 
     function isBlacklisted(address account) public view returns (bool) {
         return _blacklisted[account];
+    }
+
+    functin maxSupply() public view returns (uint256) {
+        return i_maxSupply;
     }
 }
