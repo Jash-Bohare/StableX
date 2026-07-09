@@ -84,7 +84,7 @@ contract StableX {
     }
 
     constructor(uint256 maxSupply, uint256 initialMint, address initialOwner) {
-        if(initialOwner == address(0)) {
+        if (initialOwner == address(0)) {
             revert StableX__ZeroAddress();
         }
 

@@ -6,17 +6,12 @@ import {HelperConfig} from "./HelperConfig.s.sol";
 import {StableX} from "../src/StableX.sol";
 
 contract DeployStableX is Script {
-
-    function run() external returns(StableX, HelperConfig) {
+    function run() external returns (StableX, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = helperConfig.getConfig();
 
         vm.startBroadcast();
-        StableX stableX = new StableX(
-            networkConfig.maxSupply,
-            networkConfig.initialMint,
-            networkConfig.initialOwner
-        );
+        StableX stableX = new StableX(networkConfig.maxSupply, networkConfig.initialMint, networkConfig.initialOwner);
         vm.stopBroadcast();
 
         return (stableX, helperConfig);

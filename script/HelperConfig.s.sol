@@ -4,7 +4,6 @@ pragma solidity ^0.8.26;
 import {Script} from "forge-std/Script.sol";
 
 contract HelperConfig is Script {
-
     uint256 public constant LOCAL_CHAIN_ID = 31337;
     uint256 public constant ETH_SEPOLIA_CHAIN_ID = 11155111;
     uint256 public constant ETH_MAINNET_CHAIN_ID = 1;
@@ -23,42 +22,31 @@ contract HelperConfig is Script {
         return getConfigByChainId(block.chainid);
     }
 
-    function getConfigByChainId(uint256 chainId) public view returns (NetworkConfig memory){
+    function getConfigByChainId(uint256 chainId) public view returns (NetworkConfig memory) {
         if (chainId == LOCAL_CHAIN_ID) {
             return getLocalConfig();
-        }
-        else if (chainId == ETH_SEPOLIA_CHAIN_ID) {
+        } else if (chainId == ETH_SEPOLIA_CHAIN_ID) {
             return getSepoliaConfig();
-        }
-        else if (chainId == ETH_MAINNET_CHAIN_ID) {
+        } else if (chainId == ETH_MAINNET_CHAIN_ID) {
             return getMainnetConfig();
-        }
-        else {
+        } else {
             revert HelperConfig__InvalidChainId(chainId);
         }
     }
 
     function getLocalConfig() public view returns (NetworkConfig memory) {
-        return NetworkConfig({
-            maxSupply: 1_000_000e18,
-            initialMint: 500_000e18,
-            initialOwner: ANVIL_ADDRESS
-        });
+        return NetworkConfig({maxSupply: 1_000_000e18, initialMint: 500_000e18, initialOwner: ANVIL_ADDRESS});
     }
 
     function getSepoliaConfig() public view returns (NetworkConfig memory) {
         return NetworkConfig({
-            maxSupply: 1_000_000e18,
-            initialMint: 500_000e18,
-            initialOwner: vm.envAddress("MY_WALLET_ADDRESS")
+            maxSupply: 1_000_000e18, initialMint: 500_000e18, initialOwner: vm.envAddress("MY_WALLET_ADDRESS")
         });
     }
 
     function getMainnetConfig() public view returns (NetworkConfig memory) {
         return NetworkConfig({
-            maxSupply: 1_000_000e18,
-            initialMint: 500_000e18,
-            initialOwner: vm.envAddress("MY_WALLET_ADDRESS")
+            maxSupply: 1_000_000e18, initialMint: 500_000e18, initialOwner: vm.envAddress("MY_WALLET_ADDRESS")
         });
     }
 }
