@@ -84,19 +84,21 @@ contract StableXTest is Test{
     }
 
     function testApproveAndTransferFrom() public {
-        vm.startPrank(OWNER);
+        vm.prank(OWNER);
         stableX.transfer(USER1, 150);
-        vm.stopPrank();
 
-        vm.startPrank(USER1);
+        vm.prank(USER1);
         stableX.approve(USER2, 100);
-        vm.stopPrank();
 
-        vm.startPrank(USER2);
+        uint256 user1BalanceBefore = stableX.balanceOf(USER1);
+        uint256 user3BalanceBefore = stableX.balanceOf(USER3);
+
+        vm.prank(USER2);
         stableX.transferFrom(USER1, USER3, 10);
-        vm.stopPrank();
 
         assertEq(stableX.allowance(USER1, USER2), 90);
+        assertEq(stableX.balanceOf(USER1), user1BalanceBefore - 10); // add
+        assertEq(stableX.balanceOf(USER3), user3BalanceBefore + 10); // add
     }
 
     function testInfiniteAllowanceNotReduced() public {
@@ -134,11 +136,13 @@ contract StableXTest is Test{
     function testMintIncreasesSupply() public {
         uint256 mintAmount = 500;
         uint256 beforeMint = stableX.totalSupply();
-        vm.startPrank(OWNER);
+        uint256 beforeBalance = stableX.balanceOf(USER1); // add this
+
+        vm.prank(OWNER);
         stableX.mint(USER1, mintAmount);
-        uint256 afterMint = stableX.totalSupply();
-        vm.stopPrank();
-        assertEq(afterMint, beforeMint + mintAmount);
+
+        assertEq(stableX.totalSupply(), beforeMint + mintAmount);
+        assertEq(stableX.balanceOf(USER1), beforeBalance + mintAmount); // add this
     }
 
     function testMintRevertsIfExceedsCap() public {
@@ -164,11 +168,13 @@ contract StableXTest is Test{
     function testBurnReducesSupply() public {
         uint256 burnAmount = 500;
         uint256 beforeBurn = stableX.totalSupply();
-        vm.startPrank(OWNER);
+        uint256 beforeBalance = stableX.balanceOf(OWNER); // add this
+
+        vm.prank(OWNER);
         stableX.burn(burnAmount);
-        uint256 afterBurn = stableX.totalSupply();
-        vm.stopPrank();
-        assertEq(afterBurn, beforeBurn - burnAmount);
+
+        assertEq(stableX.totalSupply(), beforeBurn - burnAmount);
+        assertEq(stableX.balanceOf(OWNER), beforeBalance - burnAmount); // add this
     }
 
     function testBurnRevertsIfInsufficientBalance() public {
@@ -217,6 +223,27 @@ contract StableXTest is Test{
         vm.stopPrank();
     }
 
+    function testBlacklistedOperatorCannotTransferFrom() public {
+         vm.prank(OWNER);
+        stableX.transfer(USER1, 200);
+
+        vm.prank(USER1);
+        stableX.approve(USER2, 200);
+
+        vm.prank(OWNER);
+        stableX.blacklist(USER2);
+
+        vm.prank(USER2);
+        vm.expectRevert(abi.encodeWithSelector(StableX.StableX__Blacklisted.selector, USER2));
+        stableX.transferFrom(USER1, USER3, 100);
+    }
+
+    function testMintRevertsToZeroAddress() public {
+        vm.prank(OWNER);
+        vm.expectRevert(StableX.StableX__ZeroAddress.selector);
+        stableX.mint(address(0), 100);
+    }
+
     function testRemoveFromBlacklistRestoresTransfer() public {
         uint256 amount = 100;
         uint256 initialBalance = stableX.balanceOf(USER2);
@@ -246,12 +273,24 @@ contract StableXTest is Test{
         vm.prank(OWNER);
         stableX.transferOwnership(USER1);
         assertEq(stableX.owner(), USER1);
+
+        vm.prank(OWNER);
+        vm.expectRevert(abi.encodeWithSelector(StableX.StableX__Unauthorized.selector, OWNER));
+        stableX.grantMinter(USER2);
+
+        vm.prank(USER1);
+        stableX.grantMinter(USER2);
+        assertTrue(stableX.isMinter(USER2));
     }
 
     function testRenounceOwnershipLocksAdmin() public {
         vm.prank(OWNER);
         stableX.renounceOwnership();
         assertEq(stableX.owner(), address(0));
+
+        vm.prank(OWNER);
+        vm.expectRevert(abi.encodeWithSelector(StableX.StableX__Unauthorized.selector, OWNER));
+        stableX.grantMinter(USER1);
     }
 
     function testGrantAndRevokeRole() public {
