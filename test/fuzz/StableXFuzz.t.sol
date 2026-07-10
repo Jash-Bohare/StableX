@@ -7,7 +7,6 @@ import {DeployStableX} from "../../script/DeployStableX.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
 contract StableXFuzz is Test {
-
     StableX public stableX;
     HelperConfig public helperConfig;
 
