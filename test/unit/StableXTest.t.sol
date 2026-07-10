@@ -6,8 +6,7 @@ import {StableX} from "../../src/StableX.sol";
 import {DeployStableX} from "../../script/DeployStableX.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 
-contract StableXTest is Test{
-
+contract StableXTest is Test {
     StableX public stableX;
     HelperConfig public helperConfig;
 
@@ -128,7 +127,11 @@ contract StableXTest is Test{
         vm.stopPrank();
 
         vm.startPrank(USER2);
-        vm.expectRevert(abi.encodeWithSelector(StableX.StableX__InsufficientAllowance.selector, USER1, USER2, stableX.allowance(USER1, USER2), 150));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                StableX.StableX__InsufficientAllowance.selector, USER1, USER2, stableX.allowance(USER1, USER2), 150
+            )
+        );
         stableX.transferFrom(USER1, USER3, 150);
         vm.stopPrank();
     }
@@ -182,7 +185,9 @@ contract StableXTest is Test{
         uint256 balance = stableX.balanceOf(OWNER);
 
         vm.startPrank(OWNER);
-        vm.expectRevert(abi.encodeWithSelector(StableX.StableX__InsufficientBalance.selector, OWNER, balance, burnAmount));
+        vm.expectRevert(
+            abi.encodeWithSelector(StableX.StableX__InsufficientBalance.selector, OWNER, balance, burnAmount)
+        );
         stableX.burn(burnAmount);
         vm.stopPrank();
     }
@@ -224,7 +229,7 @@ contract StableXTest is Test{
     }
 
     function testBlacklistedOperatorCannotTransferFrom() public {
-         vm.prank(OWNER);
+        vm.prank(OWNER);
         stableX.transfer(USER1, 200);
 
         vm.prank(USER1);
