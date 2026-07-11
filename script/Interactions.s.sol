@@ -7,8 +7,7 @@ import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 
 contract GrantMinter is Script {
     function run(address newMinter) external {
-        address mostRecentDeployment =
-            DevOpsTools.get_most_recent_deployment("StableX", block.chainid);
+        address mostRecentDeployment = DevOpsTools.get_most_recent_deployment("StableX", block.chainid);
 
         vm.startBroadcast();
 
@@ -20,8 +19,7 @@ contract GrantMinter is Script {
 
 contract GrantBlacklister is Script {
     function run(address newBlacklister) external {
-        address mostRecentDeployment =
-            DevOpsTools.get_most_recent_deployment("StableX", block.chainid);
+        address mostRecentDeployment = DevOpsTools.get_most_recent_deployment("StableX", block.chainid);
 
         vm.startBroadcast();
 
