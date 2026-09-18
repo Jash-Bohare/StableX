@@ -53,7 +53,7 @@ StableX/
 ### Install
 
 ```bash
-git clone https://github.com/yourusername/StableX
+git clone https://github.com/Jash-Bohare/StableX
 cd StableX
 forge install
 ```
